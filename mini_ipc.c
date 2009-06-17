@@ -133,7 +133,7 @@ int nand_read(u32 pageno, void *data, void *ecc)
 		(!ecc ? (u32)-1 : virt_to_phys(ecc)))->args[0];
 #if NAND_VERBOSE >= 2
 	printf("Reading from page %x:\n", pageno);
-    if(data) hexdump(data, 4);*/
+    if(data) hexdump(data, 4);
 #endif
 #if NAND_VERBOSE >= 4
 	if(data) {

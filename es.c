@@ -55,6 +55,42 @@ static u32 get_uid(u64 titleid)
 	return temp.uid;	
 }
 
+#if NANDFS_DUMMY
+static u32 shared_i = 0;
+#endif
+
+static u32 get_shared_path(char *path, u8 hash[20])
+{
+#if NANDFS_DUMMY
+	sprintf(path, "/shared1/%08x.app", shared_i++);
+	return 0;
+#endif
+	struct nandfs_fp fp;
+	struct content_map map __attribute__((aligned(32)));
+	u32 num = 0xffffffff, temp;
+
+	sprintf(path, "/shared1/content.map");
+	ASSERT(!nandfs_open(&fp, path));
+	while(sizeof(struct content_map) == nandfs_read(&map, sizeof(struct content_map), 1, &fp)) {
+		temp = my_atoi_hex(map.path, 8);
+		if(0 == memcmp(hash, map.hash, 20)) {
+			// It already exists, no need to write it
+			*path = 0;
+			return 0;
+		} else {
+			if(num == 0xffffffff || temp > num) num = temp;
+		}
+	}
+	// Make a new one
+	num++;
+	sprintf(map.path, "%08x", num);
+	memcpy(map.hash, hash, 20);
+	ASSERT(sizeof(struct content_map) == nandfs_write(&map, sizeof(struct content_map), 1, &fp));
+	sprintf(path, "/shared1/%08x.app", num);
+	printf("*** %s\n", path);
+	return 0;
+}
+
 s32 es_addtitle(struct tmd *tmd, struct tik *tik)
 {
 	// Note: ASSERT failure leaves you with a possibly broken system
@@ -79,7 +115,7 @@ s32 es_addtitle(struct tmd *tmd, struct tik *tik)
 	nandfs_create(path, 0, 0, NANDFS_ATTR_DIR, 3, 3, 1);
 
 	sprintf(path, "/ticket/%08x", tid_hi); 
-	nandfs_create(path, 0, 0, NANDFS_ATTR_DIR, 3, 3, 1);
+	nandfs_create(path, 0, 0, NANDFS_ATTR_DIR, 3, 3, 0);
 
 	sprintf(path, "/title/%08x/%08x", tid_hi, tid_lo); 
 	ASSERT(!nandfs_create(path, 0, 0, NANDFS_ATTR_DIR, 3, 3, 1));
@@ -88,7 +124,7 @@ s32 es_addtitle(struct tmd *tmd, struct tik *tik)
 	ASSERT(!nandfs_create(path, 0, 0, NANDFS_ATTR_DIR, 3, 3, 0));
 
 	sprintf(path, "/title/%08x/%08x/data", tid_hi, tid_lo); 
-	ASSERT(!nandfs_create(path, uid, gid, NANDFS_ATTR_DIR, 0, 0, 3));
+	ASSERT(!nandfs_create(path, uid, gid, NANDFS_ATTR_DIR, 3, 0, 0));
 
 	sprintf(path, "/title/%08x/%08x/content/title.tmd", tid_hi, tid_lo); 
 	ASSERT(!nandfs_create(path, 0, 0, NANDFS_ATTR_FILE, 3, 3, 0));
@@ -139,13 +175,20 @@ s32 es_addtitlecontent(struct tmd *tmd, u16 index, void *buf, u32 size)
 			hexdump(buf, 64);
 		}
 	}
-	printf("writing ");
 
-	sprintf(path, "/title/%08x/%08x/content/%08x.app", tid_hi, tid_lo, tmd->contents[i].cid);
+	printf("cid %08x writing ", tmd->contents[i].cid);
+	if(tmd->contents[i].type & 0x8000) {
+		// shared content
+		ASSERT(!get_shared_path(path, (u8 *) ctx.Message_Digest));
+	} else {
+		sprintf(path, "/title/%08x/%08x/content/%08x.app", tid_hi, tid_lo, tmd->contents[i].cid);
+	}
 	printf("PATH: %s %x %x %x\n", path, tid_hi, tid_lo, tmd->contents[i].cid);
-	ASSERT(!nandfs_create(path, 0, 0, NANDFS_ATTR_FILE, 3, 3, 0));
-	ASSERT(!nandfs_open(&fp, path));
-	ASSERT(size == (u32) nandfs_write(buf, size, 1, &fp));
+	if(*path) {
+		ASSERT(!nandfs_create(path, 0, 0, NANDFS_ATTR_FILE, 3, 3, 0));
+		ASSERT(!nandfs_open(&fp, path));
+		ASSERT(size == (u32) nandfs_write(buf, size, 1, &fp));
+	}
 
 	printf("done\n");
 
@@ -166,7 +209,7 @@ s32 es_format()
 	ASSERT(!nandfs_create("/tmp", 0, 0, NANDFS_ATTR_DIR, 3, 3, 3));
 	ASSERT(!nandfs_create("/meta", 0, 0, NANDFS_ATTR_DIR, 3, 3, 3));
 	ASSERT(!nandfs_create("/import", 0, 0, NANDFS_ATTR_DIR, 3, 3, 0));
-	ASSERT(!nandfs_create("/title", 0, 0, NANDFS_ATTR_DIR, 3, 3, 0));
+	ASSERT(!nandfs_create("/title", 0, 0, NANDFS_ATTR_DIR, 3, 3, 1));
 	ASSERT(!nandfs_create("/ticket", 0, 0, NANDFS_ATTR_DIR, 3, 3, 0));
 	ASSERT(!nandfs_create("/shared1/content.map", 0, 0, NANDFS_ATTR_FILE, 3, 3, 0));
 	ASSERT(!nandfs_create("/sys/uid.sys", 0, 0, NANDFS_ATTR_FILE, 3, 3, 0));

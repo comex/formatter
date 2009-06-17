@@ -68,6 +68,11 @@ struct uid {
 	u16 uid;
 };
 
+struct content_map {
+	u8 path[8];
+	u8 hash[20];
+};
+
 s32 es_addtitle(struct tmd *tmd, struct tik *tik);
 s32 es_addtitlecontent(struct tmd *tmd, u16 index, void *buf, u32 size);
 s32 es_format();

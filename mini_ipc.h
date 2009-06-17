@@ -29,7 +29,7 @@ Copyright (C) 2008, 2009	Sven Peter <svenpeter@gmail.com>
 #define NAND_ECC_CORRECTED 1
 #define NAND_ECC_UNCORRECTABLE -1
 
-#define NAND_VERBOSE 0
+#define NAND_VERBOSE 1
 
 int sd_get_state(void);
 int sd_protected(void);

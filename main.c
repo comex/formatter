@@ -29,7 +29,6 @@ Copyright (C) 2009              John Kelley <wiidev@kelley.ca>
 #include "es.h"
 #include "wad.h"
 #include "aes.h"
-#include "setting_txt.h"
 
 #define MINIMUM_MINI_VERSION 0x00010001
 
@@ -126,6 +125,16 @@ s32 testAES(void)
 	return ret;
 }
 
+u32 lolcrypt(u8 *stuff)
+{
+	u32 key = 0x73b5dbfa;
+	while(*stuff) {
+		*stuff ^= (key & 0xff);
+		stuff++;
+		key = ((key<<1) | (key>>31));
+	}
+}
+
 int main(void)
 {
 	int vmode = -1;
@@ -162,10 +171,25 @@ int main(void)
     print_str_noscroll(112, 112, "ohai, world!\n");
 
 	testOTP();
+	
+	hexdump(otp.nand_hmac, 20);
+	hexdump(otp.nand_key, 16);
+
 
     if(testAES()) return 0;
+
+	printf("test: %x\n", my_atoi_hex("00002a4e", 8));
+
 	struct nandfs_fp fp;
 	nandfs_initialize();
+
+#if 0
+	nandfs_open(&fp, "/shared1/content.map");
+	u8 *stuff = (u8 *) memalign(32, fp.size);
+	nandfs_read(stuff, fp.size, 1, &fp);
+	hexdump(stuff, fp.size);
+	return 0;
+#endif
 	
 	FATFS fs;
 	f_mount(0, NULL);
@@ -174,7 +198,7 @@ int main(void)
 	FIL fatf;
 	DIR fatd;
 	FILINFO fati;
-
+goto lol;
 	es_format();
 	
 	nandfs_walk();
@@ -198,21 +222,34 @@ int main(void)
 		printf("Read %d bytes\n", br);
 		printf("Done\n");
 
-		wad_install(ptr2);	
+		if(wad_install(ptr2)) break;
 		free(ptr);
 	}
 
 	printf("create: %d\n", nandfs_create("/title/00000001/00000002/data/setting.txt", 0, 0, NANDFS_ATTR_FILE, 3, 3, 3));
+lol:
+	1 + 1;
 	s32 ret = nandfs_open(&fp, "/title/00000001/00000002/data/setting.txt");
 	printf("open 2: %d\n", ret);
-	nandfs_write(imageBytes, sizeof(imageBytes), 1, &fp);
+
+	u8 settingTxt[0x100] __attribute__((aligned(32)));
+	memset(settingTxt, 0, 0x100);
+
+	u32 serno = 104170609;
+	sprintf(settingTxt, "AREA=USA\r\nMODEL=RVL-001(USA)\r\nDVD=0\r\nMPCH=0x7FFE\r\nCODE=LU\r\nSERNO=%d\r\nVIDEO=NTSC\r\nGAME=US\r\n", serno);
+
+	lolcrypt(settingTxt);
+
+	nandfs_write(settingTxt, sizeof(settingTxt), 1, &fp);
+
+	printf("iplsave: %d\n", nandfs_create("/title/00000001/00000002/data/iplsave.bin", 0, 0, NANDFS_ATTR_FILE, 3, 3, 3));
 
 	nandfs_writemeta();
 
 	printf("Final listing:\n");
 	nandfs_walk();
 
-	boot2_run(1, 31);
+	boot2_run(1, 2);
 
 	return 0;
 }

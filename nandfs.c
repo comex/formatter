@@ -327,13 +327,10 @@ u32 nandfs_get_usage(void) {
 
 static void nandfs_walker(struct _nandfs_file_node *cur, int tabs)
 {
-	char fn[13];
 	int i;
-	fn[12] = 0;
 	while(1) {
-		memcpy(fn, cur->name, 12);
 		for(i = 0; i < tabs; i++) printf("	  ");
-		printf("%s [%d %d]\n", fn, cur->attr & 3, cur->attr);
+		printf("%.12s [%d %d %x]\n", cur->name, cur->attr & 3, cur->attr, cur->sibling);
 		if((cur->attr&3) == NANDFS_ATTR_DIR
 			 && (s16)(cur->first_child&0xffff) != (s16)0xffff) {
 			nandfs_walker(&sffs.sffs.files[cur->first_child], tabs+1);
@@ -397,7 +394,7 @@ s32 nandfs_format()
 			sffs.sffs.cluster_table[i] = NANDFS_CLUSTER_FREE;
 	}
 	memset(&sffs.sffs.files[1], 0, sizeof(sffs.sffs.files) - sizeof(struct _nandfs_file_node)); // Preserve '/'
-	sffs.sffs.files[0].first_child = 0xffff;
+	sffs.sffs.files[0].first_child = sffs.sffs.files[0].sibling = 0xffff;
 	return 0;
 }
 
@@ -427,7 +424,7 @@ s32 nandfs_create(const char *path, u32 uid, u16 gid, u8 attr, u8 user_perm, u8 
 
 		for (;;) {
 #if NANDFS_VERBOSE >= 1
-			printf("walking %s [%d] fc=%x\n", cur->name, cur->attr & 3, cur->first_cluster);
+			printf("walking %.12s [%d] fc=%x\n", cur->name, cur->attr & 3, cur->first_cluster);
 #endif
 			if(ptr2 != NULL && strncmp(cur->name, ptr, len) == 0
 				 && strnlen(cur->name, 12) == len
@@ -532,7 +529,7 @@ s32 nandfs_open(struct nandfs_fp *fp, const char *path)
 
 		for (;;) {
 #if NANDFS_VERBOSE >= 1
-			printf("walking %s [%d]\n", cur->name, cur->attr & 3);
+			printf("walking %.12s [%d]\n", cur->name, cur->attr & 3);
 #endif
 			if(ptr2 != NULL && strncmp(cur->name, ptr, len) == 0
 				 && strnlen(cur->name, 12) == len
@@ -660,7 +657,7 @@ s32 nandfs_write(const u8 *ptr, u32 size, u32 nmemb, struct nandfs_fp *fp)
 						}
 					}
 #if NANDFS_VERBOSE >= 2
-					printf("Cluster %d is %s\n", i, good ? "good" : "bad");
+					printf("Cluster %x is %s\n", i, good ? "good" : "bad");
 #endif
 					if(good) {
                         if(fp->first_cluster > 0xfff0) {
@@ -812,10 +809,7 @@ void nandfs_test()
 	for(i = 0; i < 6143; i++) {
 		struct _nandfs_file_node *file = &sffs.sffs.files[i];
 		if(memcmp(&empty, file, sizeof(struct _nandfs_file_node)) == 0) continue;
-		char name[13];
-		name[12] = 0;
-		memcpy(name, file, 12);
-		printf("%s fc:%x\n", name, file->first_cluster);
+		printf("%.12s fc:%x\n", file->name, file->first_cluster);
 		hexdump(file, sizeof(*file)); 
 	}
 	for(i = 0; i < 32768; i++) {
