@@ -1,0 +1,280 @@
+/*
+        BootMii - a Free Software replacement for the Nintendo/BroadOn bootloader.
+        Requires mini.
+
+Copyright (C) 2008, 2009        Haxx Enterprises <bushing@gmail.com>
+Copyright (C) 2009              Andre Heider "dhewg" <dhewg@wiibrew.org>
+Copyright (C) 2008, 2009        Hector Martin "marcan" <marcan@marcansoft.com>
+Copyright (C) 2008, 2009        Sven Peter <svenpeter@gmail.com>
+Copyright (C) 2009              John Kelley <wiidev@kelley.ca>
+
+# This code is licensed to you under the terms of the GNU GPL, version 2;
+# see file COPYING or http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt
+*/
+
+#include "bootmii_ppc.h"
+#include "string.h"
+#include "ipc.h"
+#include "mini_ipc.h"
+#include "nandfs.h"
+#include "otp.h"
+#include "fat.h"
+#include "malloc.h"
+#include "diskio.h"
+#include "printf.h"
+#include "video_low.h"
+#include "input.h"
+#include "console.h"
+#include "sha1.h"
+#include "es.h"
+#include "wad.h"
+#include "aes.h"
+#include "setting_txt.h"
+
+#define MINIMUM_MINI_VERSION 0x00010001
+
+seeprom_t seeprom;
+
+static void dsp_reset(void)
+{
+	write16(0x0c00500a, read16(0x0c00500a) & ~0x01f8);
+	write16(0x0c00500a, read16(0x0c00500a) | 0x0010);
+	write16(0x0c005036, 0);
+}
+
+static char ascii(char s) {
+  if(s < 0x20) return '.';
+  if(s > 0x7E) return '.';
+  return s;
+}
+
+void hexdump(void *d, int len) {
+  u8 *data;
+  int i, off;
+  data = (u8*)d;
+  for (off=0; off<len; off += 16) {
+    printf("%08x  ",off);
+    for(i=0; i<16; i++)
+      if((i+off)>=len) printf("   ");
+      else printf("%02x ",data[off+i]);
+
+    printf(" ");
+    for(i=0; i<16; i++)
+      if((i+off)>=len) printf(" ");
+      else printf("%c",ascii(data[off+i]));
+    printf("\n");
+  }
+}
+	
+void testOTP(void)
+{
+	printf("reading OTP...\n");
+	printf("OTP:\n");
+	otp_init();
+	hexdump(&otp, sizeof(otp_t));
+
+	printf("reading SEEPROM...\n");
+	getseeprom(&seeprom);
+	printf("read SEEPROM!\n");
+	printf("SEEPROM:\n");
+	hexdump(&seeprom, sizeof(seeprom));
+}
+
+s32 testAES(void)
+{
+	printf("testAES: ");
+	static u8 somedata[128] ALIGNED(64);
+	static u8 data2[128] ALIGNED(64);
+	static u8 data3[128] ALIGNED(64);
+	u8 key[16], iv[16];
+	/*printf("somedata:\n");
+	hexdump(somedata, 128);
+	printf("key:\n");
+	hexdump(key, 16);
+	printf("iv:\n");
+	hexdump(iv, 16);
+	printf("\n");*/
+
+	memset(data2, 0, 128);
+	aes_reset();
+	aes_set_key(key);
+	aes_set_iv(iv);
+	aes_encrypt(somedata, data2, 128/16, 0);
+
+/*	hexdump(data2, 128);
+
+	printf("...\n");
+	printf("iv:\n");
+	hexdump(iv, 16);
+	printf("--\n");*/
+	
+	aes_reset();
+	aes_set_key(key);
+	aes_set_iv(iv);
+	aes_decrypt(data2, data3, 128/16, 0);
+    s32 ret = memcmp(somedata, data3, 128) ? -1 : 0;
+    printf("%d\n", ret); 
+	if(ret) return ret;
+
+	memset(data3, 0, 128);
+	my_aes_set_key(key);
+	my_aes_decrypt(iv, data2, data3, 128);
+
+    ret = memcmp(somedata, data3, 128) ? -1 : 0;
+    printf("aes test 2: %d\n", ret); 
+    
+	return ret;
+}
+
+int main(void)
+{
+	int vmode = -1;
+	exception_init();
+	dsp_reset();
+
+	// clear interrupt mask
+	write32(0x0c003004, 0);
+
+	ipc_initialize();
+	ipc_slowping();
+
+	gecko_init();
+    input_init();
+	init_fb(vmode);
+
+	VIDEO_Init(vmode);
+	VIDEO_SetFrameBuffer(get_xfb());
+	VISetupEncoder();
+
+	u32 version = ipc_getvers();
+	u16 mini_version_major = version >> 16 & 0xFFFF;
+	u16 mini_version_minor = version & 0xFFFF;
+	printf("Mini version: %d.%0d\n", mini_version_major, mini_version_minor);
+
+	if (version < MINIMUM_MINI_VERSION) {
+		printf("Sorry, this version of MINI (armboot.bin)\n"
+			"is too old, please update to at least %d.%0d.\n", 
+			(MINIMUM_MINI_VERSION >> 16), (MINIMUM_MINI_VERSION & 0xFFFF));
+		for (;;) 
+			; // better ideas welcome!
+	}
+
+    print_str_noscroll(112, 112, "ohai, world!\n");
+
+	testOTP();
+
+    if(testAES()) return 0;
+	struct nandfs_fp fp;
+	nandfs_initialize();
+#if 0
+	s32 res = nandfs_open(&fp, "/sys/cert.sys");
+	printf("res: %d\n", res);
+	u8 buf[64] ALIGNED(64);
+	nandfs_seek(&fp, 0, 0);
+	nandfs_read(buf, 64, 1, &fp);
+	printf("************\n");
+	hexdump(buf, 64);
+	nandfs_seek(&fp, 0, 0);
+	nandfs_write(buf, 64, 1, &fp);
+
+
+	//nandfs_writemeta();
+	//nandfs_get_usage();
+s32 ret = nandfs_open(&fp, "/title/00000001/00000002/content/0000003a.app");
+    printf("res: %d\n", ret);
+    static u8 ptr[sizeof(imageBytes)] ALIGNED(32);
+    printf("%d\n", nandfs_read(ptr, sizeof(imageBytes), 1, &fp));
+    printf("---->\n");
+    hexdump(ptr, 0x8000);
+   
+    printf("%d\n", memcmp(ptr, imageBytes, sizeof(imageBytes)));
+    u8 *a = imageBytes, *b = ptr;
+    int k = 0;
+    while(*a++ == *b++) k++;
+    printf(":: %d %x\n", k, k);
+   // nandfs_writemeta();
+    printf("%08x\n", imageBytes);
+    nandfs_seek(&fp, 0, 0);
+    printf("%d\n", nandfs_write(imageBytes, sizeof(imageBytes), 1, &fp));
+	s32 ret = nandfs_open(&fp, "/title/00000001/00000002/content/0000003a.app");
+    static u8 ptr[0x8000] ALIGNED(32);
+	int sz = 2048*8+1;
+    printf("%d\n", nandfs_read(ptr, sz,  1, &fp));
+	//hexdump(ptr, 0x8000);
+	nandfs_seek(&fp, 0, 0);
+	printf("%d\n", nandfs_write(ptr, sz, 1, &fp));
+#endif
+//    nandfs_test();
+	//nandfs_walk();
+/*	nandfs_create("/sys/foo", 2);
+	printf("open /sys: %d\n", nandfs_open(&fp, "/sys/empty.sys"));
+	printf("delete: %d\n", nandfs_delete(&fp));
+	nandfs_walk();
+	nandfs_writemeta();
+	return 0;
+	nandfs_create("/sys/empty.sys", 1);
+	s32 ret = nandfs_open(&fp, "/sys/empty.sys");
+	printf("open: %d\n", ret);
+	printf("%d\n", nandfs_write(0x81300000, 2048*9, 1, &fp));
+	nandfs_writemeta();
+	nandfs_walk();*/
+	FATFS fs;
+	f_mount(0, NULL);
+	disk_initialize(0);
+	f_mount(0, &fs);
+	FIL fatf;
+	DIR fatd;
+	FILINFO fati;
+
+#if 0
+	s32 ret = nandfs_open(&fp, "/title/00000001/00000002/data/setting.txt");
+	printf("open setting.txt: %d\n", ret);
+	if(ret) return 1;
+	u32 settingsize = fp.size;
+	u8 *settingbuf = memalign(32, fp.size);
+	nandfs_read(settingbuf, fp.size, 1, &fp);
+#endif
+
+	es_format();
+	
+	nandfs_walk();
+
+
+	static u8 pathname[1024];
+	printf("diropen: %d\n", f_opendir(&fatd, "wad"));
+	while(1) {
+		printf("readdir: %d\n", f_readdir(&fatd, &fati));
+		if(fati.fname[0] == 0) break;
+		sprintf(pathname, "/wad/%s", fati.fname);
+		FRESULT ret = f_open(&fatf, pathname, FA_READ);
+		printf("open %s: %d\n", pathname, ret);
+		if(ret) continue;
+		u32 br = 0xdeadbeef;
+		u8 *ptr = (u8 *) memalign(32, fatf.fsize + 0x40);
+		u8 *ptr2 = ptr + 0x40 - ((u32)ptr % 0x40);
+		printf("fsize: %d ptr: %x\n", fatf.fsize, ptr);
+
+		f_lseek(&fatf, 0);
+		f_read(&fatf, (void*) ptr2, fatf.fsize, &br);
+		printf("Read %d bytes\n", br);
+		printf("Done\n");
+
+		wad_install(ptr2);	
+		free(ptr);
+	}
+
+	printf("create: %d\n", nandfs_create("/title/00000001/00000002/data/setting.txt", 0, 0, NANDFS_ATTR_FILE, 3, 3, 3));
+	s32 ret = nandfs_open(&fp, "/title/00000001/00000002/data/setting.txt");
+	printf("open 2: %d\n", ret);
+	nandfs_write(imageBytes, sizeof(imageBytes), 1, &fp);
+
+	nandfs_writemeta();
+
+	printf("Final listing:\n");
+	nandfs_walk();
+
+	boot2_run(1, 31);
+
+	return 0;
+}
+
