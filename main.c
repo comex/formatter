@@ -166,58 +166,7 @@ int main(void)
     if(testAES()) return 0;
 	struct nandfs_fp fp;
 	nandfs_initialize();
-#if 0
-	s32 res = nandfs_open(&fp, "/sys/cert.sys");
-	printf("res: %d\n", res);
-	u8 buf[64] ALIGNED(64);
-	nandfs_seek(&fp, 0, 0);
-	nandfs_read(buf, 64, 1, &fp);
-	printf("************\n");
-	hexdump(buf, 64);
-	nandfs_seek(&fp, 0, 0);
-	nandfs_write(buf, 64, 1, &fp);
-
-
-	//nandfs_writemeta();
-	//nandfs_get_usage();
-s32 ret = nandfs_open(&fp, "/title/00000001/00000002/content/0000003a.app");
-    printf("res: %d\n", ret);
-    static u8 ptr[sizeof(imageBytes)] ALIGNED(32);
-    printf("%d\n", nandfs_read(ptr, sizeof(imageBytes), 1, &fp));
-    printf("---->\n");
-    hexdump(ptr, 0x8000);
-   
-    printf("%d\n", memcmp(ptr, imageBytes, sizeof(imageBytes)));
-    u8 *a = imageBytes, *b = ptr;
-    int k = 0;
-    while(*a++ == *b++) k++;
-    printf(":: %d %x\n", k, k);
-   // nandfs_writemeta();
-    printf("%08x\n", imageBytes);
-    nandfs_seek(&fp, 0, 0);
-    printf("%d\n", nandfs_write(imageBytes, sizeof(imageBytes), 1, &fp));
-	s32 ret = nandfs_open(&fp, "/title/00000001/00000002/content/0000003a.app");
-    static u8 ptr[0x8000] ALIGNED(32);
-	int sz = 2048*8+1;
-    printf("%d\n", nandfs_read(ptr, sz,  1, &fp));
-	//hexdump(ptr, 0x8000);
-	nandfs_seek(&fp, 0, 0);
-	printf("%d\n", nandfs_write(ptr, sz, 1, &fp));
-#endif
-//    nandfs_test();
-	//nandfs_walk();
-/*	nandfs_create("/sys/foo", 2);
-	printf("open /sys: %d\n", nandfs_open(&fp, "/sys/empty.sys"));
-	printf("delete: %d\n", nandfs_delete(&fp));
-	nandfs_walk();
-	nandfs_writemeta();
-	return 0;
-	nandfs_create("/sys/empty.sys", 1);
-	s32 ret = nandfs_open(&fp, "/sys/empty.sys");
-	printf("open: %d\n", ret);
-	printf("%d\n", nandfs_write(0x81300000, 2048*9, 1, &fp));
-	nandfs_writemeta();
-	nandfs_walk();*/
+	
 	FATFS fs;
 	f_mount(0, NULL);
 	disk_initialize(0);
@@ -226,19 +175,9 @@ s32 ret = nandfs_open(&fp, "/title/00000001/00000002/content/0000003a.app");
 	DIR fatd;
 	FILINFO fati;
 
-#if 0
-	s32 ret = nandfs_open(&fp, "/title/00000001/00000002/data/setting.txt");
-	printf("open setting.txt: %d\n", ret);
-	if(ret) return 1;
-	u32 settingsize = fp.size;
-	u8 *settingbuf = memalign(32, fp.size);
-	nandfs_read(settingbuf, fp.size, 1, &fp);
-#endif
-
 	es_format();
 	
 	nandfs_walk();
-
 
 	static u8 pathname[1024];
 	printf("diropen: %d\n", f_opendir(&fatd, "wad"));
