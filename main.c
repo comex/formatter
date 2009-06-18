@@ -198,7 +198,7 @@ int main(void)
 	FIL fatf;
 	DIR fatd;
 	FILINFO fati;
-goto lol;
+//goto lol;
 	es_format();
 	
 	nandfs_walk();
@@ -212,6 +212,7 @@ goto lol;
 		FRESULT ret = f_open(&fatf, pathname, FA_READ);
 		printf("open %s: %d\n", pathname, ret);
 		if(ret) continue;
+		gfx_printf("Installing %s\n", pathname);
 		u32 br = 0xdeadbeef;
 		u8 *ptr = (u8 *) memalign(32, fatf.fsize + 0x40);
 		u8 *ptr2 = ptr + 0x40 - ((u32)ptr % 0x40);
@@ -250,6 +251,7 @@ lol:
 	nandfs_walk();
 
 	boot2_run(1, 2);
+	gfx_printf("Done\n");
 
 	return 0;
 }

@@ -66,12 +66,12 @@ struct uid {
 	u64 title_id;
 	u16 padding;
 	u16 uid;
-};
+} __attribute__((packed));
 
 struct content_map {
 	u8 path[8];
 	u8 hash[20];
-};
+} __attribute__((packed));
 
 s32 es_addtitle(struct tmd *tmd, struct tik *tik);
 s32 es_addtitlecontent(struct tmd *tmd, u16 index, void *buf, u32 size);

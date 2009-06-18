@@ -1,6 +1,9 @@
-This is the bare minimum to run the System Menu and homebrew (maybe
-EULA isn't absolutely required).  Use NUS Downloader to grab the
-following and pack them as WADs, and copy the result to the 'wad'
+This will (not might, will) delete all your data, so maybe it's a good
+idea to have a backup.
+
+The following is the bare minimum to run the System Menu and homebrew
+(maybe EULA isn't absolutely required).  Use NUS Downloader to grab
+the following and pack them as WADs, and copy the result to the 'wad'
 folder...
 
 Title ID            Version

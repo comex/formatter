@@ -30,12 +30,15 @@ static u32 get_uid(u64 titleid)
 
 	struct uid temp __attribute__((aligned(32)));
 	struct nandfs_fp fp;
+	memset(&temp, 0, sizeof(temp));
 	u16 maxuid = 0;
 	u32 i;
 
 	sprintf(path, "/sys/uid.sys");
 	ASSERT(!nandfs_open(&fp, path));
 	
+	ASSERT(sizeof(temp) == 12);
+
 	for(i = 0; i < fp.size; i += 12) {
 		ASSERT(!nandfs_seek(&fp, i, NANDFS_SEEK_SET));
 		ASSERT(sizeof(temp) == nandfs_read((u8*)&temp, sizeof(temp), 1, &fp));

@@ -213,6 +213,6 @@ int printf(const char *fmt, ...) {
 	i = vsprintf(buffer, fmt, args);
 	va_end(args);
 
-	return gecko_sendbuffer_safe(buffer, i);
+	return gecko_sendbuffer(buffer, i);
 }
 
