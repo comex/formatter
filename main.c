@@ -214,7 +214,7 @@ int main(void)
 		if(ret) continue;
 		gfx_printf("Installing %s\n", pathname);
 		u32 br = 0xdeadbeef;
-		u8 *ptr = (u8 *) memalign(32, fatf.fsize + 0x40);
+		u8 *ptr = malloc(fatf.fsize + 0x80);
 		u8 *ptr2 = ptr + 0x40 - ((u32)ptr % 0x40);
 		printf("fsize: %d ptr: %x\n", fatf.fsize, ptr);
 
@@ -224,7 +224,9 @@ int main(void)
 		printf("Done\n");
 
 		if(wad_install(ptr2)) break;
+		printf("free-->\n");
 		free(ptr);
+		printf("<--\n");
 	}
 
 	printf("create: %d\n", nandfs_create("/title/00000001/00000002/data/setting.txt", 0, 0, NANDFS_ATTR_FILE, 3, 3, 3));
