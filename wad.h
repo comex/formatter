@@ -9,6 +9,8 @@
 #ifndef __WAD_H__
 #define __WAD_H__
 
+#include "fat.h"
+
 struct wadheader {
 	u32 hdr_size;
 	u32 type;
@@ -20,6 +22,5 @@ struct wadheader {
 	u32 footer_size;
 };
 
-// Warning: This is destructive and will mess up (actually decrypt) your wa
-s32 wad_install(void *wad);
+s32 wad_install(FIL *fil);
 #endif

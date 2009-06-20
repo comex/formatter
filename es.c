@@ -177,6 +177,7 @@ s32 es_addtitlecontent(struct tmd *tmd, u16 index, void *buf, u32 size)
 		if(size == 64) {
 			hexdump(buf, 64);
 		}
+		while(1);
 	}
 
 	printf("cid %08x writing ", tmd->contents[i].cid);
