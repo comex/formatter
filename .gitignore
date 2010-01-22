@@ -1,1 +1,4 @@
-ppcboot.elf
+/*.o
+/.deps
+/ppcboot.elf
+/ppcboot.elf.map
