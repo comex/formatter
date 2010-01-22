@@ -4455,6 +4455,7 @@ size_t destroy_mspace(mspace msp) {
       if ((flag & IS_MMAPPED_BIT) && !(flag & EXTERN_BIT) &&
           CALL_MUNMAP(base, size) == 0)
         freed += size;
+      (void)base;
     }
   }
   else {

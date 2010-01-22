@@ -16,6 +16,7 @@ Copyright (C) 2009		John Kelley <wiidev@kelley.ca>
 #include "string.h"
 #include "printf.h"
 #include "malloc.h"
+#include "main.h"
 
 #include <stdarg.h>
 
@@ -199,7 +200,11 @@ void font_to_yuv(void) {
 	u8 lr,lg,lb, rr,rg,rb;
 
 	for (i = 0; i < 255; i++) {
+#ifdef MSPACES
+		font_yuv[i] = (u32*)mspace_malloc(mem2space, 8*CONSOLE_CHAR_HEIGHT*2);
+#else
 		font_yuv[i] = (u32*)malloc(8*CONSOLE_CHAR_HEIGHT*2);
+#endif
 
 		for (y = 0; y < CONSOLE_CHAR_HEIGHT; y++) {
 			for (x = 0; x < 8; x+=2) {
@@ -240,7 +245,11 @@ void init_fb(int vmode) {
 		break;
 	}
 
+#ifdef MSPACES
+	xfb = mspace_memalign(mem2space, 32, 640 * (480 + (y_add*2)) * 2);
+#else
 	xfb = memalign(32, 640 * (480 + (y_add*2)) * 2);
+#endif
 
 	fb  = xfb;
 	for (i = 0; i < (480 + (y_add*2)) * 2 * (640 >> 1); i++) {

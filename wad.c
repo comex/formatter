@@ -44,13 +44,21 @@ s32 wad_install(FIL *fil)
 
 	offset += ALIGN(hdr.hdr_size, 0x40);
 	offset += ALIGN(hdr.certs_size, 0x40);
+#ifdef MSPACES
+	struct tik *tik = mspace_memalign(mem2space, 32, hdr.tik_size);
+#else
 	struct tik *tik = memalign(32, hdr.tik_size);
+#endif
 	ASSERT(tik);
 	f_lseek(fil, offset);
 	ASSERT(!f_read(fil, tik, hdr.tik_size, &br));
 	ASSERT(br == hdr.tik_size);
 	offset += ALIGN(hdr.tik_size, 0x40);
+#ifdef MSPACES
+	struct tmd *tmd = mspace_memalign(mem2space, 32, hdr.tmd_size);
+#else
 	struct tmd *tmd = memalign(32, hdr.tmd_size);
+#endif
 	ASSERT(tmd);
 	f_lseek(fil, offset);
 	ASSERT(!f_read(fil, tmd, hdr.tmd_size, &br));
@@ -84,7 +92,11 @@ s32 wad_install(FIL *fil)
 	printf("num contents: %d\n", tmd->num_contents);
 	printf("%08x %08x\n", tmd, tik);
 	for(i = 0; i < tmd->num_contents; i++) {
+#ifdef MSPACES
+		u8 *content = mspace_memalign(mem2space, 32, ALIGN(tmd->contents[i].size, 0x40));
+#else
 		u8 *content = (void *)0x91000000;//memalign(32, ALIGN(tmd->contents[i].size, 0x40));
+#endif
 		ASSERT(content);
 
 		f_lseek(fil, offset);
@@ -104,12 +116,20 @@ s32 wad_install(FIL *fil)
 		ASSERT(!es_addtitlecontent(tmd, tmd->contents[i].index, content, tmd->contents[i].size));
 
 		offset += ALIGN(tmd->contents[i].size, 0x40);
-
+#ifdef MSPACES
+		mspace_free(mem2space, content);
+#else
 		//free(content);
+#endif
 	}
 
+#ifdef MSPACES
+	mspace_free(mem2space, tmd);
+	mspace_free(mem2space, tik);
+#else
 	free(tmd);
 	free(tik);
+#endif
 
 	return 0;
 }

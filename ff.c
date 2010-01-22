@@ -68,6 +68,7 @@
 #include "diskio.h"		/* Declarations of low level disk I/O functions */
 #include "malloc.h"
 #include "string.h"
+#include "main.h"
 
 /*--------------------------------------------------------------------------
 
@@ -1433,7 +1434,11 @@ FRESULT auto_mount (	/* FR_OK(0): successful, !=0: any error occured */
 	fsize *= fs->n_fats;								/* (Number of sectors in FAT area) */
 	fs->fatbase = bsect + LD_WORD(fs->win+BPB_RsvdSecCnt); /* FAT start sector (lba) */
 	if (fs->fat_buffer == NULL)
+#ifdef MSPACES
+		fs->fat_buffer = mspace_memalign(mem2space, 64, fs->sects_fat * 512); // don't forget to free me
+#else
 		fs->fat_buffer = memalign(64, fs->sects_fat * 512); // don't forget to free me
+#endif
 
 	fs->csize = fs->win[BPB_SecPerClus];				/* Number of sectors per cluster */
 	fs->n_rootdir = LD_WORD(fs->win+BPB_RootEntCnt);	/* Nmuber of root directory entries */

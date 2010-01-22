@@ -34,6 +34,10 @@ Copyright (C) 2009              John Kelley <wiidev@kelley.ca>
 
 seeprom_t seeprom;
 
+#ifdef MSPACES
+mspace mem2space;
+#endif
+
 static void dsp_reset(void)
 {
 	write16(0x0c00500a, read16(0x0c00500a) & ~0x01f8);
@@ -139,6 +143,9 @@ u32 lolcrypt(u8 *stuff)
 int main(void)
 {
 	int vmode = -1;
+#ifdef MSPACES
+	mem2space = create_mspace_with_base((void *)0x90000000, 64*1024*1024, 0);
+#endif
 	exception_init();
 	dsp_reset();
 
@@ -186,7 +193,11 @@ int main(void)
 
 #if 0
 	nandfs_open(&fp, "/shared1/content.map");
+#ifdef MSPACES
+	u8 *stuff = (u8 *) mspace_memalign(mem2space, 32, fp.size);
+#else
 	u8 *stuff = (u8 *) memalign(32, fp.size);
+#endif
 	nandfs_read(stuff, fp.size, 1, &fp);
 	hexdump(stuff, fp.size);
 	return 0;
