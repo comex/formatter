@@ -29,7 +29,7 @@ void hmac_update(hmac_ctx *ctx, const u8 *data, int size)
 	SHA1Input(&ctx->hash_ctx,data,size);
 }
 
-void hmac_final(hmac_ctx *ctx, unsigned char *hmac) 
+void hmac_final(hmac_ctx *ctx, unsigned char *hmac)
 {
 	int i;
 	unsigned char hash[0x14];
@@ -71,7 +71,7 @@ void fs_hmac_generic(const unsigned char *data, int size, const unsigned char *e
 	hmac_ctx ctx;
 
 	hmac_init(&ctx,(const char *)hmac_key,0x14);
-	
+
 	hmac_update(&ctx,extra,extra_size);
 	hmac_update(&ctx,data,size);
 
@@ -94,7 +94,7 @@ void fs_hmac_data(const unsigned char *data, int uid, const unsigned char *name,
 	unsigned char extra[0x40];
 
 	memset(extra,0,0x40);
-	
+
 	wbe32(extra, uid);
 
 	memcpy(extra+4,name,12);
@@ -102,7 +102,7 @@ void fs_hmac_data(const unsigned char *data, int uid, const unsigned char *name,
 	wbe16(extra + 0x12, blk);
 	wbe32(extra + 0x14, entry_n);
 	wbe32(extra + 0x18, x3);
-	
+
 //	fprintf(stderr,"extra (%s): \nX ",name);
 //	for(i=0;i<0x20;++i){
 //	    fprintf(stderr,"%02X ",extra[i]);

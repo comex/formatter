@@ -60,7 +60,7 @@
 void SHA1ProcessMessageBlock(SHA1Context *);
 void SHA1PadMessage(SHA1Context *);
 
-/*  
+/*
  *  SHA1Reset
  *
  *  Description:
@@ -93,7 +93,7 @@ void SHA1Reset(SHA1Context *context)
     context->Corrupted  = 0;
 }
 
-/*  
+/*
  *  SHA1Result
  *
  *  Description:
@@ -127,7 +127,7 @@ int SHA1Result(SHA1Context *context)
     return 1;
 }
 
-/*  
+/*
  *  SHA1Input
  *
  *  Description:
@@ -193,7 +193,7 @@ void SHA1Input(     SHA1Context         *context,
     }
 }
 
-/*  
+/*
  *  SHA1ProcessMessageBlock
  *
  *  Description:
@@ -210,12 +210,12 @@ void SHA1Input(     SHA1Context         *context,
  *      Many of the variable names in the SHAContext, especially the
  *      single character names, were used because those were the names
  *      used in the publication.
- *         
+ *
  *
  */
 void SHA1ProcessMessageBlock(SHA1Context *context)
 {
-    const unsigned K[] =            /* Constants defined in SHA-1   */      
+    const unsigned K[] =            /* Constants defined in SHA-1   */
     {
         0x5A827999,
         0x6ED9EBA1,
@@ -309,7 +309,7 @@ void SHA1ProcessMessageBlock(SHA1Context *context)
     context->Message_Block_Index = 0;
 }
 
-/*  
+/*
  *  SHA1PadMessage
  *
  *  Description:

@@ -21,7 +21,7 @@ Copyright (C) 2009		bLAStY <blasty@bootmii.org>
 
 static GC_Pad _pad;
 
-static void gcpad_init(void) { 
+static void gcpad_init(void) {
 	write32(PADREG(0), 0x00400300); // read pad on channel 1
 	write32(PADREG(3), 0x00400300);
 	write32(PADREG(6), 0x00400300);
@@ -136,7 +136,7 @@ u16 input_wait(void) {
 		udelay(20000);
 		res = input_read();
 	} while (!(res & PAD_ANY));
-	
+
 	return res;
 }
 

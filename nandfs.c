@@ -27,7 +27,7 @@ Copyright (C) 2008, 2009	Sven Peter <svenpeter@gmail.com>
 #define NANDFS_CLUSTER_HDR		0xFFFC // Part of the header so don't use it
 #define NANDFS_CLUSTER_BAD		0xFFFD
 #define NANDFS_CLUSTER_FREE		0xFFFE
-#define NANDFS_CLUSTER_UNK		0xFFFF // I have some of these but 
+#define NANDFS_CLUSTER_UNK		0xFFFF // I have some of these but
                                        // sure what they are
 
 struct _nandfs_file_node {
@@ -182,7 +182,7 @@ void nand_read_cluster(u32 pageno, u8 *buffer)
 void nand_write_cluster(u32 pageno, u8 *buffer, u8 *hmac) {
 	// Thisfunction is a clusterfuck.
 	// Calculate the ECC.
-		
+
 	int i;
 	for (i = 0; i < 8; i++) {
 		static u8 spare[64] __attribute__((aligned(128)));
@@ -302,7 +302,7 @@ void nandfs_writemeta(void)
 	// but who cares
 
 	fs_hmac_meta(sffs.buffer, supercluster/8, hmac);
-	
+
 	for(i = 0; i < 16; i++) {
 #if NANDFS_VERBOSE >= 2
 		printf("HMAC:\n");
@@ -343,7 +343,7 @@ static void nandfs_walker(struct _nandfs_file_node *cur, int tabs)
 
 s32 nandfs_walk()
 {
-	if(initialized != 1) 
+	if(initialized != 1)
 		return -1;
 	nandfs_walker(sffs.sffs.files, 0);
 	return 0;
@@ -356,7 +356,7 @@ static struct _nandfs_file_node *nandfs_new_node(u32 uid, u16 gid, u8 attr, u8 u
 	struct _nandfs_file_node *node;
 	struct _nandfs_file_node empty;
 	memset(&empty, 0, sizeof(struct _nandfs_file_node));
-	
+
 	for(i = 0; i < 6143; i++) {
 		node = &sffs.sffs.files[i];
 		if(memcmp(node, &empty, sizeof(struct _nandfs_file_node)) == 0) {
@@ -467,7 +467,7 @@ s32 nandfs_create(const char *path, u32 uid, u16 gid, u8 attr, u8 user_perm, u8 
 			}
 		}
 		if(ptr2 == NULL) break;
-		ptr++;	
+		ptr++;
 		ptr2 = strchr(ptr, '/');
 		if (ptr2 == NULL)
 			len = strlen(ptr);
@@ -560,7 +560,7 @@ s32 nandfs_open(struct nandfs_fp *fp, const char *path)
 				return -1;
 			}
 		}
-		
+
 	} while(ptr2 != NULL);
 
 	fp->first_cluster = cur->first_cluster;
@@ -719,7 +719,7 @@ s32 nandfs_write(const u8 *ptr, u32 size, u32 nmemb, struct nandfs_fp *fp)
 
 	// Do we need to increase size?
 	if(fp->offset > fp->size) {
-		fp->size = fp->node->size = fp->offset;	
+		fp->size = fp->node->size = fp->offset;
 	}
 
 	nand_lazy_write((u32) -1, NULL, NULL); // Commit
@@ -775,7 +775,7 @@ s32 nandfs_delete(struct nandfs_fp *fp)
 #if NANDFS_VERBOSE >= 1
 	printf("Deleting %s size %d\n", fp->node->name, fp->node->size);
 #endif
-	// Get rid of the clusters	
+	// Get rid of the clusters
     if((fp->node->attr & 3) == 1) {
         fp->cur_cluster = fp->first_cluster;
         while(fp->cur_cluster <= 0xfff0) {
@@ -811,7 +811,7 @@ void nandfs_test()
 		struct _nandfs_file_node *file = &sffs.sffs.files[i];
 		if(memcmp(&empty, file, sizeof(struct _nandfs_file_node)) == 0) continue;
 		printf("%.12s fc:%x\n", file->name, file->first_cluster);
-		hexdump(file, sizeof(*file)); 
+		hexdump(file, sizeof(*file));
 	}
 	for(i = 0; i < 32768; i++) {
 		u16 clus = sffs.sffs.cluster_table[i];

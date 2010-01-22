@@ -1,7 +1,7 @@
 /*
 	BootMii - a Free Software replacement for the Nintendo/BroadOn bootloader.
 	Requires mini.
-	
+
 Copyright (C) 2008		Segher Boessenkool <segher@kernel.crashing.org>
 
 # This code is licensed to you under the terms of the GNU GPL, version 2;

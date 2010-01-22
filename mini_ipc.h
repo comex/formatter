@@ -116,7 +116,7 @@ struct otp_t;
 void getotp(struct otp_t *otp);
 void getseeprom(seeprom_t *seeprom);
 void getMiniGitVer(char *buf, u16 len);
-	
+
 void nand_reset(void);
 u32 nand_getid(void);
 u8 nand_status(void);

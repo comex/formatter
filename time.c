@@ -17,9 +17,9 @@ Copyright (C) 2008		Segher Boessenkool <segher@kernel.crashing.org>
 u64 mftb(void)
 {
   u32 hi, lo, dum;
-  
-  asm("0: mftbu %0 ; mftb %1 ; mftbu %2 ; cmplw %0,%2 ; bne 0b" 
-      : "=r"(hi), "=r"(lo), "=r"(dum)); 
+
+  asm("0: mftbu %0 ; mftb %1 ; mftbu %2 ; cmplw %0,%2 ; bne 0b"
+      : "=r"(hi), "=r"(lo), "=r"(dum));
   return ((u64)hi << 32) | lo;
 }
 

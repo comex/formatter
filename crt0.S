@@ -15,11 +15,11 @@ _start:
 	lis      2,0x8000
 	stw      1,0x34(2) # write sp
 #	lis      13,_SDA_BASE_@h
-#	ori      13,13,_SDA_BASE_@l # Set the Small Data (Read\Write) base register.	
+#	ori      13,13,_SDA_BASE_@l # Set the Small Data (Read\Write) base register.
 
-	bl       InitHardware # Initialize the GameCube Hardware (Floating Point Registers, Caches, etc.) 
+	bl       InitHardware # Initialize the GameCube Hardware (Floating Point Registers, Caches, etc.)
 	bl       SystemInit # Initialize more cache aspects, clear a few SPR's, and disable interrupts.
-	
+
 	# clear BSS
 	lis 3, __bss_start@h
 	ori 3, 3, __bss_start@l
@@ -27,15 +27,15 @@ _start:
 	lis 5, __bss_end@h
 	ori 5, 5, __bss_end@l
 	sub 5, 5, 3
-	
+
 	bl memset
-	
+
 	bl       main # Branch to the user code!
 	b .	# If the main function returns, then just loop endlessly.
 
 InitHardware:
 	mflr     31 # Store the link register in r31
-	
+
 	bl		 PSInit 	# Initialize Paired Singles
 	bl       FPRInit 	# Initialize the FPR's
 	bl       CacheInit 	# Initialize the system caches
@@ -66,7 +66,7 @@ PSInit:
 	mtspr    918,3
 	mtspr    919,3
 
-	# Return 
+	# Return
 	blr
 
 FPRInit:
@@ -74,7 +74,7 @@ FPRInit:
 	mfmsr    3
 	ori      3,3,0x2000
 	mtmsr    3
-	
+
 	# Clear all of the FPR's to 0
 	lis		 3, zfloat@h
 	ori		 3, 3, zfloat@l
@@ -138,15 +138,15 @@ ICEnabled:
 	rlwinm   0, 3, 0, 17, 17
 	cmplwi   0, 0x0000 # Check if the Data Cache has been enabled or not.
 	bne      DCEnabled
-	
+
 	# If not, then enable it.
 	sync
 	mfspr    3, 1008
 	ori      3, 3, 0x4000
 	mtspr    1008, 3
-	
+
 DCEnabled:
-	
+
 	mfspr    3, 1017 # (L2CR)
 	clrrwi   0, 3, 31 # Clear all of the bits except 31
 	cmplwi   0, 0x0000
@@ -155,9 +155,9 @@ DCEnabled:
 	# Store the current state of the MSR in r30
 	mfmsr    3
 	mr       30,3
-	
+
 	sync
-	
+
 	# Enable Instruction and Data Address Translation
 	li       3, 48
 	mtmsr    3
@@ -219,7 +219,7 @@ L2GICheckComplete:
 	clrlwi   0, 3, 31
 	cmplwi   0, 0x0000
 	bne      L2GICheckComplete
-	
+
 	# Clear the L2 Data Only bit and the L2 Global Invalidate Bit.
 	mfspr    3, 1017  # (L2CR)
 	rlwinm   3, 3, 0, 11, 9
@@ -269,10 +269,10 @@ SystemInit:
 
 	# Set the Non-IEEE mode in the FPSCR
 	mtfsb1   29
-	
+
 	mfspr    3,920 # (HID2)
 	rlwinm   3, 3, 0, 2, 0
-	mtspr    920,3 # (HID2)		
+	mtspr    920,3 # (HID2)
 
 	# Restore the non-volatile registers to their previous values and return.
 	lwz     0, 0x1C(1)

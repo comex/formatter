@@ -156,7 +156,7 @@ static inline int gecko_sendbuffer(const void *buffer, u32 size) {
 static int gecko_recvbuffer_safe(void *buffer, u32 size) {
 	u32 left = size;
 	char *ptr = (char*)buffer;
-	
+
 	while(left>0) {
 		if(_gecko_checkrecv()) {
 			if(!_gecko_recvbyte(ptr))
@@ -171,7 +171,7 @@ static int gecko_recvbuffer_safe(void *buffer, u32 size) {
 static inline int gecko_sendbuffer_safe(const void *buffer, u32 size) {
 	u32 left = size;
 	char *ptr = (char*)buffer;
-	
+
 	while(left>0) {
 		if(_gecko_checksend()) {
 			if(!_gecko_sendbyte(*ptr))

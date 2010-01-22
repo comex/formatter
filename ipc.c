@@ -198,7 +198,7 @@ ipc_request *ipc_receive(void)
 void ipc_process_unhandled(volatile ipc_request *rep)
 {
 	printf("IPC: Unhandled message: %08x %08x [%08x %08x %08x %08x %08x %08x]\n",
-		rep->code, rep->tag, rep->args[0], rep->args[1], rep->args[2], rep->args[3], 
+		rep->code, rep->tag, rep->args[0], rep->args[1], rep->args[2], rep->args[3],
 		rep->args[4], rep->args[5]);
 }
 

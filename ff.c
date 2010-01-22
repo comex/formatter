@@ -1432,9 +1432,9 @@ FRESULT auto_mount (	/* FR_OK(0): successful, !=0: any error occured */
 	fs->n_fats = fs->win[BPB_NumFATs];					/* Number of FAT copies */
 	fsize *= fs->n_fats;								/* (Number of sectors in FAT area) */
 	fs->fatbase = bsect + LD_WORD(fs->win+BPB_RsvdSecCnt); /* FAT start sector (lba) */
-	if (fs->fat_buffer == NULL) 
+	if (fs->fat_buffer == NULL)
 		fs->fat_buffer = memalign(64, fs->sects_fat * 512); // don't forget to free me
-	
+
 	fs->csize = fs->win[BPB_SecPerClus];				/* Number of sectors per cluster */
 	fs->n_rootdir = LD_WORD(fs->win+BPB_RootEntCnt);	/* Nmuber of root directory entries */
 	tsect = LD_WORD(fs->win+BPB_TotSec16);				/* Number of sectors on the file system */
@@ -1474,7 +1474,7 @@ FRESULT auto_mount (	/* FR_OK(0): successful, !=0: any error occured */
 	if (fs->fat_buffer != NULL) {
 		res = disk_read(fs->drive, fs->fat_buffer, fs->fatbase, fs->sects_fat);
 	}
-	
+
 	fs->winsect = 0;
 	fs->fs_type = fmt;			/* FAT syb-type */
 	fs->id = ++Fsid;			/* File system mount ID */

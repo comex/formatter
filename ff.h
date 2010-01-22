@@ -184,7 +184,7 @@ typedef struct _FATFS {
 	DWORD	database;	/* Data start sector */
 	DWORD	winsect;	/* Current sector appearing in the win[] */
 	BYTE	win[_MAX_SS];/* Disk access window for Directory/FAT */
-	
+
 	BYTE	*fat_buffer;
 	BYTE	fat_dirty;
 } FATFS;

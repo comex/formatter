@@ -102,7 +102,7 @@ void VIDEO_Init(int VideoMode)
 		video_initstate = VIDEO_Mode640X480NtsciYUV16;
 		break;
 	}
-	
+
 	VI_debug("Configuring VI...\n");
 	for(Counter=0; Counter<64; Counter++)
 	{

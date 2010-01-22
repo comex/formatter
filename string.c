@@ -60,7 +60,7 @@ int memcmp(const void *s1, const void *s2, size_t len)
 
 	for (i = 0; i < len; i++)
 		if (p1[i] != p2[i]) return p1[i] - p2[i];
-	
+
 	return 0;
 }
 
@@ -70,7 +70,7 @@ int strcmp(const char *s1, const char *s2)
 
 	for (i = 0; s1[i] && s1[i] == s2[i]; i++)
 		;
-	
+
 	return s1[i] - s2[i];
 }
 
@@ -109,7 +109,7 @@ size_t strlcat(char *dest, const char *src, size_t maxlen)
 char * strchr(const char *s, int c)
 {
 	size_t i;
-	
+
 	for (i = 0; s[i]; i++)
 		if (s[i] == (char)c) return (char *)s + i;
 

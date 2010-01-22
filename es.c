@@ -37,7 +37,7 @@ static u32 get_uid(u64 titleid)
 
 	sprintf(path, "/sys/uid.sys");
 	ASSERT(!nandfs_open(&fp, path));
-	
+
 	ASSERT(sizeof(temp) == 12);
 
 	for(i = 0; i < fp.size; i += 12) {
@@ -56,7 +56,7 @@ static u32 get_uid(u64 titleid)
 	ASSERT(!nandfs_seek(&fp, 0, NANDFS_SEEK_END));
 	ASSERT(sizeof(temp) == nandfs_write((u8*)&temp, sizeof(temp), 1, &fp));
 
-	return temp.uid;	
+	return temp.uid;
 }
 
 #if NANDFS_DUMMY
@@ -100,7 +100,7 @@ s32 es_addtitle(struct tmd *tmd, struct tik *tik)
 	// Note: ASSERT failure leaves you with a possibly broken system
 	// Welp!
 	struct nandfs_fp fp;
-	
+
 	nandfs_initialize();
 
 	ASSERT(tmd);
@@ -115,27 +115,27 @@ s32 es_addtitle(struct tmd *tmd, struct tik *tik)
 	u16 gid = tmd->group_id;
 	u32 tmd_size = 0x1e4 + 36 * tmd->num_contents;
 
-	sprintf(path, "/title/%08x", tid_hi); 
+	sprintf(path, "/title/%08x", tid_hi);
 	nandfs_create(path, 0, 0, NANDFS_ATTR_DIR, 3, 3, 1);
 
-	sprintf(path, "/ticket/%08x", tid_hi); 
+	sprintf(path, "/ticket/%08x", tid_hi);
 	nandfs_create(path, 0, 0, NANDFS_ATTR_DIR, 3, 3, 0);
 
-	sprintf(path, "/title/%08x/%08x", tid_hi, tid_lo); 
+	sprintf(path, "/title/%08x/%08x", tid_hi, tid_lo);
 	ASSERT(!nandfs_create(path, 0, 0, NANDFS_ATTR_DIR, 3, 3, 1));
 
-	sprintf(path, "/title/%08x/%08x/content", tid_hi, tid_lo); 
+	sprintf(path, "/title/%08x/%08x/content", tid_hi, tid_lo);
 	ASSERT(!nandfs_create(path, 0, 0, NANDFS_ATTR_DIR, 3, 3, 0));
 
-	sprintf(path, "/title/%08x/%08x/data", tid_hi, tid_lo); 
+	sprintf(path, "/title/%08x/%08x/data", tid_hi, tid_lo);
 	ASSERT(!nandfs_create(path, uid, gid, NANDFS_ATTR_DIR, 3, 0, 0));
 
-	sprintf(path, "/title/%08x/%08x/content/title.tmd", tid_hi, tid_lo); 
+	sprintf(path, "/title/%08x/%08x/content/title.tmd", tid_hi, tid_lo);
 	ASSERT(!nandfs_create(path, 0, 0, NANDFS_ATTR_FILE, 3, 3, 0));
 	ASSERT(!nandfs_open(&fp, path));
 	ASSERT(tmd_size == (u32) nandfs_write((void*)tmd, tmd_size, 1, &fp));
 
-	sprintf(path, "/ticket/%08x/%08x.tik", tid_hi, tid_lo); 
+	sprintf(path, "/ticket/%08x/%08x.tik", tid_hi, tid_lo);
 	ASSERT(!nandfs_create(path, 0, 0, NANDFS_ATTR_FILE, 3, 3, 0));
 	ASSERT(!nandfs_open(&fp, path));
 	ASSERT(0x2a4 == nandfs_write((void*)tik, 0x2a4, 1, &fp));
