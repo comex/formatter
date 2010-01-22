@@ -9,8 +9,7 @@
 
 */
 
-#include <stdio.h>
-#include <string.h>
+#include "string.h"
 
 #define u8 unsigned char       /* 8 bits  */
 #define u32 unsigned long       /* 32 bits */
@@ -334,7 +333,7 @@ void decrypt(char *buff)
 
 void my_aes_set_key(u8 *key) {
   gentables();
-  gkey(4, 4, key);
+  gkey(4, 4, (char *)key);
 }
 
 // CBC mode decryption
@@ -354,7 +353,7 @@ void my_aes_decrypt(u8 *iv, u8 *inbuf, u8 *outbuf, unsigned long long len) {
 
     //    debug_printf("block %d: fraction = %d\n", blockno, fraction);
     memcpy(block, inbuf + blockno * sizeof(block), fraction);
-    decrypt(block);
+    decrypt((char *)block);
     u8 *ctext_ptr;
     if (blockno == 0) ctext_ptr = iv;
     else ctext_ptr = inbuf + (blockno-1) * sizeof(block);
@@ -388,7 +387,7 @@ void my_aes_encrypt(u8 *iv, u8 *inbuf, u8 *outbuf, unsigned long long len) {
     for(i=0; i < fraction; i++) 
       block[i] = inbuf[blockno * sizeof(block) + i] ^ iv[i];
     
-    encrypt(block);
+    encrypt((char*)block);
     memcpy(iv, block, sizeof(block));
     memcpy(outbuf + blockno * sizeof(block), block, sizeof(block));
     //    debug_printf("Block %d output: ", blockno);

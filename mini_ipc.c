@@ -145,6 +145,7 @@ int nand_read(u32 pageno, void *data, void *ecc)
 		hexdump(ecc, 0x40);
 	}
 #endif
+	return res;
 }
 
 void nand_write(u32 pageno, void *data, void *ecc)

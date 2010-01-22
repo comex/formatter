@@ -15,6 +15,7 @@
 #include "string.h"
 #include "sha1.h"
 #include "es.h"
+#include "main.h"
 
 #define ASSERT(x) do { if(!(x)) { printf("ASSERT failure: %s in %s:%d\n", #x, __FILE__, __LINE__); return -1; } } while(0)
 
@@ -74,8 +75,8 @@ static u32 get_shared_path(char *path, u8 hash[20])
 
 	sprintf(path, "/shared1/content.map");
 	ASSERT(!nandfs_open(&fp, path));
-	while(sizeof(struct content_map) == nandfs_read(&map, sizeof(struct content_map), 1, &fp)) {
-		temp = my_atoi_hex(map.path, 8);
+	while(sizeof(struct content_map) == nandfs_read((u8 *)&map, sizeof(struct content_map), 1, &fp)) {
+		temp = my_atoi_hex((char *)map.path, 8);
 		if(0 == memcmp(hash, map.hash, 20)) {
 			// It already exists, no need to write it
 			*path = 0;
@@ -86,9 +87,9 @@ static u32 get_shared_path(char *path, u8 hash[20])
 	}
 	// Make a new one
 	num++;
-	sprintf(map.path, "%08x", num);
+	sprintf((char *)map.path, "%08x", num);
 	memcpy(map.hash, hash, 20);
-	ASSERT(sizeof(struct content_map) == nandfs_write(&map, sizeof(struct content_map), 1, &fp));
+	ASSERT(sizeof(struct content_map) == nandfs_write((const u8 *)&map, sizeof(struct content_map), 1, &fp));
 	sprintf(path, "/shared1/%08x.app", num);
 	printf("*** %s\n", path);
 	return 0;

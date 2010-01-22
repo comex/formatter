@@ -133,6 +133,7 @@ u32 lolcrypt(u8 *stuff)
 		stuff++;
 		key = ((key<<1) | (key>>31));
 	}
+	return key;
 }
 
 int main(void)
@@ -171,7 +172,7 @@ int main(void)
     print_str_noscroll(112, 112, "ohai, world!\n");
 
 	testOTP();
-	
+
 	hexdump(otp.nand_hmac, 20);
 	hexdump(otp.nand_key, 16);
 
@@ -190,7 +191,7 @@ int main(void)
 	hexdump(stuff, fp.size);
 	return 0;
 #endif
-	
+
 	FATFS fs;
 	f_mount(0, NULL);
 	disk_initialize(0);
@@ -203,7 +204,7 @@ int main(void)
 	
 	nandfs_walk();
 
-	static u8 pathname[1024];
+	static char pathname[1024];
 	printf("diropen: %d\n", f_opendir(&fatd, "wad"));
 	while(1) {
 		printf("readdir: %d\n", f_readdir(&fatd, &fati));
@@ -219,20 +220,19 @@ int main(void)
 	}
 
 	printf("create: %d\n", nandfs_create("/title/00000001/00000002/data/setting.txt", 0, 0, NANDFS_ATTR_FILE, 3, 3, 3));
-lol:
-	1 + 1;
+//lol:
 	s32 ret = nandfs_open(&fp, "/title/00000001/00000002/data/setting.txt");
 	printf("open 2: %d\n", ret);
 
-	u8 settingTxt[0x100] __attribute__((aligned(32)));
+	char settingTxt[0x100] __attribute__((aligned(32)));
 	memset(settingTxt, 0, 0x100);
 
 	u32 serno = 104170609;
 	sprintf(settingTxt, "AREA=USA\r\nMODEL=RVL-001(USA)\r\nDVD=0\r\nMPCH=0x7FFE\r\nCODE=LU\r\nSERNO=%d\r\nVIDEO=NTSC\r\nGAME=US\r\n", serno);
 
-	lolcrypt(settingTxt);
+	lolcrypt((u8 *)settingTxt);
 
-	nandfs_write(settingTxt, sizeof(settingTxt), 1, &fp);
+	nandfs_write((u8 *)settingTxt, sizeof(settingTxt), 1, &fp);
 
 	printf("iplsave: %d\n", nandfs_create("/title/00000001/00000002/data/iplsave.bin", 0, 0, NANDFS_ATTR_FILE, 3, 3, 3));
 

@@ -68,10 +68,9 @@ void fs_hmac_set_key(const char *key, int key_size)
 
 void fs_hmac_generic(const unsigned char *data, int size, const unsigned char *extra, int extra_size, unsigned char *hmac)
 {
-	int i;
 	hmac_ctx ctx;
 
-	hmac_init(&ctx,hmac_key,0x14);
+	hmac_init(&ctx,(const char *)hmac_key,0x14);
 	
 	hmac_update(&ctx,extra,extra_size);
 	hmac_update(&ctx,data,size);
@@ -91,7 +90,7 @@ void fs_hmac_meta(const unsigned char *super_data, short super_blk, unsigned cha
 
 void fs_hmac_data(const unsigned char *data, int uid, const unsigned char *name, int entry_n, int x3, short blk, unsigned char *hmac)
 {
-	int i,j;
+	//int i,j;
 	unsigned char extra[0x40];
 
 	memset(extra,0,0x40);

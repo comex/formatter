@@ -139,7 +139,7 @@ static int gecko_recvbuffer(void *buffer, u32 size) {
 }
 #endif
 
-static int gecko_sendbuffer(const void *buffer, u32 size) {
+static inline int gecko_sendbuffer(const void *buffer, u32 size) {
 	u32 left = size;
 	char *ptr = (char*)buffer;
 
@@ -168,7 +168,7 @@ static int gecko_recvbuffer_safe(void *buffer, u32 size) {
 	return (size - left);
 }
 #endif
-static int gecko_sendbuffer_safe(const void *buffer, u32 size) {
+static inline int gecko_sendbuffer_safe(const void *buffer, u32 size) {
 	u32 left = size;
 	char *ptr = (char*)buffer;
 	

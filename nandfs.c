@@ -18,6 +18,7 @@ Copyright (C) 2008, 2009	Sven Peter <svenpeter@gmail.com>
 #include "string.h"
 #include "otp.h"
 #include "aes.h"
+#include "main.h"
 
 #define	PAGE_SIZE	2048
 #define NANDFS_CLUSTER_LAST		0xFFFB // cluster_map[last cluster in
@@ -146,7 +147,7 @@ static void nand_lazy_write(u32 pageno, void *data, void *ecc)
 	}
 #endif
 	if(myblock != blockno) {
-#ifdef NANDFS_VERBOSE >= 2
+#if NANDFS_VERBOSE >= 2
 		printf("Switching from block %x to block %x\n", blockno, myblock);
 #endif
 		if(blockno != ((u32) -1)) {
@@ -230,7 +231,7 @@ void nand_write_decrypted_cluster(u32 pageno, u8 *buffer, struct nandfs_fp *fp)
 	fs_hmac_data(
 		buffer,
 		fp->node->uid,
-		fp->node->name,
+		(const unsigned char *)fp->node->name,
 		fp->idx,
 		fp->node->dummy,
 		fp->cluster_idx,
@@ -288,7 +289,7 @@ s32 nandfs_initialize(void)
 
 	initialized = 1;
 
-	fs_hmac_set_key(otp.nand_hmac, 20);
+	fs_hmac_set_key((char *)otp.nand_hmac, 20);
 	return 0;
 }
 
@@ -592,7 +593,7 @@ s32 nandfs_read(u8 *ptr, u32 size, u32 nmemb, struct nandfs_fp *fp)
         if(fp->cur_cluster > 0xfff0) {
             return size*nmemb - total;
         }
-		if(fp->offset / (PAGE_SIZE * 8) == fp->cluster_idx) {
+		if(fp->offset / (PAGE_SIZE * 8) == (size_t)fp->cluster_idx) {
             copy_offset = fp->offset % (PAGE_SIZE * 8);
             copy_len = (PAGE_SIZE * 8) - copy_offset;
             if(copy_len > total)
@@ -684,7 +685,7 @@ s32 nandfs_write(const u8 *ptr, u32 size, u32 nmemb, struct nandfs_fp *fp)
 			}
 		}
 
-		if(fp->offset / (PAGE_SIZE * 8) == fp->cluster_idx) {
+		if(fp->offset / (PAGE_SIZE * 8) == (size_t)fp->cluster_idx) {
 			copy_offset = fp->offset % (PAGE_SIZE * 8);
 			copy_len = (PAGE_SIZE * 8) - copy_offset;
 			if(copy_len > total)

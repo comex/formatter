@@ -12,6 +12,7 @@
 #include "bootmii_ppc.h"
 #include "string.h"
 #include "aes.h"
+#include "malloc.h"
 
 #if !HARDWARE_AES
 
@@ -28,8 +29,9 @@ void aes_set_key(u8 *key)
 }
 void aes_decrypt(u8 *src, u8 *dst, u32 blocks, u8 keep_iv)
 {
+	(void)keep_iv;
 	if(src == dst) {
-		u8 *p = 0x92000000;//malloc(16*blocks);
+		u8 *p = (void *)0x92000000;//malloc(16*blocks);
 		my_aes_decrypt(aes_iv, src, p, 16*blocks);
 		memcpy(dst, p, 16*blocks);
 		//free(p);
@@ -38,8 +40,9 @@ void aes_decrypt(u8 *src, u8 *dst, u32 blocks, u8 keep_iv)
 }
 void aes_encrypt(u8 *src, u8 *dst, u32 blocks, u8 keep_iv)
 {
+	(void)keep_iv;
 	if(src == dst) {
-		u8 *p = 0x92000000;//malloc(16*blocks);
+		u8 *p = (void *)92000000;//malloc(16*blocks);
 		my_aes_encrypt(aes_iv, src, p, 16*blocks);
 		memcpy(dst, p, 16*blocks);
 		//free(p);

@@ -49,5 +49,6 @@ s32 nandfs_read(u8 *ptr, u32 size, u32 nmemb, struct nandfs_fp *fp);
 s32 nandfs_write(const u8 *ptr, u32 size, u32 nmemb, struct nandfs_fp *fp);
 s32 nandfs_seek(struct nandfs_fp *fp, s32 offset, u32 whence);
 s32 nandfs_delete(struct nandfs_fp *fp);
+void nandfs_writemeta(void);
 #endif
 

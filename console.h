@@ -17,7 +17,7 @@ void print_str(const char *str, size_t len);
 void print_str_noscroll(int x, int y, char *str);
 int console_printf(const char *fmt, ...);
 u32 *get_xfb(void);
-
+int gfx_printf(const char *fmt, ...);
 extern unsigned char console_font_8x16[];
 
 #endif

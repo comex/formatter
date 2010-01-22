@@ -20,6 +20,7 @@
 #include "es.h"
 #include "aes.h"
 #include "malloc.h"
+#include "main.h"
 
 #define ASSERT(x) do { if(!(x)) { printf("Assert failure: %s in %s:%d\n", #x, __FILE__, __LINE__); return -1; } } while(0)
 
@@ -83,7 +84,7 @@ s32 wad_install(FIL *fil)
 	printf("num contents: %d\n", tmd->num_contents);
 	printf("%08x %08x\n", tmd, tik);
 	for(i = 0; i < tmd->num_contents; i++) {
-		u8 *content = 0x91000000;//memalign(32, ALIGN(tmd->contents[i].size, 0x40));		
+		u8 *content = (void *)0x91000000;//memalign(32, ALIGN(tmd->contents[i].size, 0x40));
 		ASSERT(content);
 
 		f_lseek(fil, offset);
